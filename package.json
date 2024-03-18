@@ -1,0 +1,27 @@
+{
+  "name": "api-ncm",
+  "version": "1.0.0",
+  "description": "API for dashboard ncm",
+  "type": "module",
+  "main": "./src/Main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon ."
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ajv": "^8.12.0",
+    "cluster": "^0.7.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.3",
+    "fs-extra": "^11.2.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "mysql2": "^3.9.2",
+    "nanoid": "^5.0.6",
+    "nodemon": "^3.1.0",
+    "sequelize": "^6.37.1"
+  }
+}
