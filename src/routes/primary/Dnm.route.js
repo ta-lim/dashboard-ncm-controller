@@ -15,6 +15,7 @@ class DnmRoute extends Primary {
     this.API.get(this.endpointPrefix, (req, res) => this.DnmController.getAllData(req,res));
     this.API.get(this.endpointPrefix + '/analyze', (req, res) => this.DnmController.getAnalyze(req,res));
     this.API.get(this.endpointPrefix + '/detail/:id', (req, res) => this.DnmController.getDetail(req,res));
+    this.API.get(this.endpointPrefix + '/search', (req, res) => this.DnmController.search(req, res));
 
     this.API.post(this.endpointPrefix + '/create', this.AuthorizationMiddleware.check(),  (req, res) => this.DnmController.createData(req, res));
 

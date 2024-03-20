@@ -81,8 +81,16 @@ class DnmController {
   }
 
   async search(req, res){
+    const { title } = req.query;
 
-    const searchSrv = await this.DnmService.search();
+    if(title.length < 3) return res.status(400).json(this.ResponsePreset.resErr(
+      400,
+      'Bad request, Minimum length search 3 ',
+      'service'
+    ))
+    
+
+    const searchSrv = await this.DnmService.search(title);
 
     res.status(200).json(this.ResponsePreset.resOK( 'OK', searchSrv ))
   }

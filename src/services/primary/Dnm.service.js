@@ -1,5 +1,7 @@
 import DnmModel from "../../models/Dnm.model.js";
 
+import { Op } from "sequelize";
+
 class DnmService {
   constructor(server){
     this.server = server;
@@ -45,7 +47,7 @@ class DnmService {
     return getDetailDnm;
   }
 
-  async updateData(data, id) {
+  async updateData(data) {
     const updateDataDnm = await this.DnmModel.update({
       title: data.title,
       picOne: data.picOne,
@@ -95,8 +97,20 @@ class DnmService {
       "done": done.length > 0 ? done[0].count : 0,
       "total": getAnalyze.reduce((total, item) => total + item.count, 0),
     }
-    return summary
+    return summary;
   }
+
+  async search(title) {
+    const searchTitle = await this.DnmModel.findAll({
+      where: {
+        title: {
+          [Op.substring]: `%${title}%`
+        }
+      }
+    })
+
+    return searchTitle;
+  } 
 }
 
 export default DnmService;
