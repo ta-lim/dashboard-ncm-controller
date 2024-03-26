@@ -10,6 +10,10 @@ class DnmService {
   }
 
   async createData(data) { 
+    if (data.subCategory === '4' && data.category.includes(['8', '9', '10'])){
+      return -1;
+    }
+
     const addDataDnmModel = await this.DnmModel.create({
       title: data.title,
       picOne: data.picOne,
