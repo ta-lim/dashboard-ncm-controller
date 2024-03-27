@@ -36,6 +36,14 @@ class DnmService {
         category,
         ...(subCategory && { subCategory }),
       },
+      order: [
+        [
+          'status', 'ASC'
+        ],
+        [
+          'timeline', 'ASC'
+        ]
+      ],
     })
 
     return getDataDnm;
@@ -89,9 +97,9 @@ class DnmService {
       group: ['status']
     });
     
-    const onProgress = getAnalyze.filter(item => ['1', '2', '3', '4', '5'].includes(item.status));
-    const pending = getAnalyze.filter(item => ['7'].includes(item.status));
-    const done = getAnalyze.filter(item => ['6'].includes(item.status));
+    const onProgress = getAnalyze.filter(item => ['1', '2', '3', '4', '5', '9'].includes(item.status));
+    const pending = getAnalyze.filter(item => ['7', '8'].includes(item.status));
+    const done = getAnalyze.filter(item => ['6', '10'].includes(item.status));
 
     const onProgressSum = onProgress.reduce((total, item) => total + item.count, 0);
 
