@@ -37,7 +37,12 @@ class DnmController {
 
   async getAllData(req, res){
     const { category, subCategory } = req.query
-    
+    if ( !category) return res.status(400).json(this.ResponsePreset.resErr(
+      404,
+      "Not found",
+      'service',
+      -1
+    ))
     const getAllData = await this.DnmService.getAllData(category, subCategory);
 
     return res.status(200).json(this.ResponsePreset.resOK('OK', getAllData));
@@ -93,6 +98,23 @@ class DnmController {
     const searchSrv = await this.DnmService.search(title);
 
     res.status(200).json(this.ResponsePreset.resOK( 'OK', searchSrv ))
+  }
+
+  async downloadData(req, res){
+    try{
+      const { category } = req.query;
+      const downloadDocumentSrv = await this.DnmService.downloadData(category);
+  
+      res.setHeader('Content-Type', downloadDocumentSrv.mime);
+      res.setHeader('Content-Disposition', 'attachment; filename=' + downloadDocumentSrv.title + '.xlsx');
+      res.status(200).send(downloadDocumentSrv.file);
+    } catch(err) {
+      return res.status(500).json({
+        status: 500,
+        message: 'Server Error',
+        err: err.message
+      });
+    }
   }
 }
 export default DnmController
