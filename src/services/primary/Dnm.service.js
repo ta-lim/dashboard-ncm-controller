@@ -115,13 +115,19 @@ class DnmService {
     const done = await getAnalyze.filter(item => ['6', '10'].includes(item.status));
 
     function calculateRankSum(arr) {
-      return arr.reduce((result, current) => {
-        if (!result[current.picOne]) {
-          result[current.picOne] = { count: 0 };
+      const result = arr.reduce((acc, current) => {
+        if (!acc[current.picOne]) {
+          acc[current.picOne] = { count: 0 };
         }
-        result[current.picOne].count += current.count;
-        return result;
+        acc[current.picOne].count += current.count;
+        return acc;
       }, {});
+    
+      const sortedData = Object.keys(result).map(name => ({ name, count: result[name].count }));
+    
+      sortedData.sort((a, b) => b.count - a.count);
+    
+      return sortedData;
     }
 
     const onProgressSum = await onProgress.reduce((total, item) => total + item.count, 0);
