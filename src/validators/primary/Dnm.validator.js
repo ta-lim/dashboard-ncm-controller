@@ -70,7 +70,7 @@ class DnmValidator {
       'timeline',
       'category',
     ],
-    additionalProperties: true,
+    additionalProperties: false,
   }
 
   updateDataScheme = {
@@ -148,6 +148,40 @@ class DnmValidator {
       'description',
       'status',
       'timeline',
+      'category',
+      'subCategory'
+    ],
+    additionalProperties: false,
+  }
+
+  updateStatusScheme = {
+
+    properties: {
+      id: {
+        type: 'integer',
+        // minLength: 1,
+        // maxLength: 3
+      },
+      status: {
+        type: 'string',
+        enum: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
+        nullable: false
+      },
+      category: {
+        type: 'string',
+        enum: ['1', '2', '3'],
+        nullable: false
+      },
+      subCategory: {
+        anyOf: [
+          { type: 'null' }, // Allow subCategory to be null (optional)
+          { type: 'string', enum: ['1', '2', '3', '4'] },
+        ],
+      },
+    },
+    required: [
+      'id',
+      'status',
       'category',
       'subCategory'
     ],

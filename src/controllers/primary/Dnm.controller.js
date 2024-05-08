@@ -66,7 +66,23 @@ class DnmController {
       schemeValidate.errors[0]
     ));
     const updateDataSrv = await this.DnmService.updateData(req.body);
-    return res.status(200).json(this.ResponsePreset.resOK("OK", null))
+    if (updateDataSrv) return res.status(200).json(this.ResponsePreset.resOK("OK", null))
+    return -1;
+  }
+
+  async updateStatus(req, res){
+    const schemeValidate = this.Ajv.compile(this.DnmValidator.updateStatusScheme);
+    
+    if(!schemeValidate(req.body)) return res.status(400).json(this.ResponsePreset.resErr(
+      400,
+      schemeValidate.errors[0].message,
+      'validator',
+      schemeValidate.errors[0]
+    ));
+    const updateStatusSrv = await this.DnmService.updateStatus(req.body);
+
+    if (updateStatusSrv) return res.status(200).json(this.ResponsePreset.resOK("OK", null)) ;
+    
   }
 
   async deleteData(req, res){
@@ -86,7 +102,7 @@ class DnmController {
   }
 
   async search(req, res){
-    const { title } = req.query;
+    const { title, category, subCategory } = req.query;
 
     if(title.length < 3) return res.status(400).json(this.ResponsePreset.resErr(
       400,
@@ -95,8 +111,11 @@ class DnmController {
     ))
     
 
-    const searchSrv = await this.DnmService.search(title);
-
+    const searchSrv = await this.DnmService.search(title, category, subCategory);
+    
+    if (searchSrv === -1) return res.status(400).json({
+      message: 'Error required spesific category',
+    })
     res.status(200).json(this.ResponsePreset.resOK( 'OK', searchSrv ))
   }
 
@@ -114,6 +133,24 @@ class DnmController {
         message: 'Server Error',
         err: err.message
       });
+    }
+  }
+  async masterDataFilter(req, res){
+    const { category, subCategory } = req.query;
+
+    const masterDataFilterSrv = await this.DnmService.masterDataFilter(category, subCategory);
+      
+    return res.status(200).json(this.ResponsePreset.resOK("OK", masterDataFilterSrv))
+
+  }
+  async filterData(req, res){
+  
+    if (Object.keys(req.query).length !== 0) {
+      const {picOne, status, timeline, UIC, category, subCategory} = req.query
+      const filterDataSrv = await this.DnmService.filterData({picOne, status, timeline, UIC, category, subCategory})
+
+      return res.status(200).json(this.ResponsePreset.resOK("OK", filterDataSrv))
+      
     }
   }
 }

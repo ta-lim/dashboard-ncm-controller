@@ -16,11 +16,14 @@ class DnmRoute extends Primary {
     this.API.get(this.endpointPrefix + '/analyze', (req, res) => this.DnmController.getAnalyze(req,res));
     this.API.get(this.endpointPrefix + '/detail/:id', (req, res) => this.DnmController.getDetail(req,res));
     this.API.get(this.endpointPrefix + '/search', (req, res) => this.DnmController.search(req, res));
+    this.API.get(this.endpointPrefix + '/filter', (req, res) => this.DnmController.filterData(req, res));
+    this.API.get(this.endpointPrefix + '/master-data-filter', (req, res) => this.DnmController.masterDataFilter(req, res));
     this.API.get(this.endpointPrefix + '/download', this.AuthorizationMiddleware.check(), (req, res) => this.DnmController.downloadData(req, res));
 
     this.API.post(this.endpointPrefix + '/create', this.AuthorizationMiddleware.check(),  (req, res) => this.DnmController.createData(req, res));
 
     this.API.put(this.endpointPrefix + '/update', this.AuthorizationMiddleware.check(), (req, res) => this.DnmController.updateData(req, res));
+    this.API.put(this.endpointPrefix + '/update-status', this.AuthorizationMiddleware.check(),  (req, res) => this.DnmController.updateStatus(req, res));
 
     this.API.delete(this.endpointPrefix + '/delete/:id', this.AuthorizationMiddleware.check(), (req, res) => this.DnmController.deleteData(req, res))
 

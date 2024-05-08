@@ -62,7 +62,6 @@ class AuthController {
   }
 
   async refreshToken(req, res){
-    console.log(req.query)
     const tokenData = req.middlewares.authorization;
     const { refreshToken } = req.query;
     const getRefreshTokenSrv = await this.AuthService.refreshToken(tokenData, refreshToken);
