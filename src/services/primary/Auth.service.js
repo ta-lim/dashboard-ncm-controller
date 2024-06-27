@@ -22,8 +22,8 @@ class AuthService{
 
     if(userModeData !== null) return -1;
     const password = md5(data.password + ' - ' + this.server.env.HASH_SALT)
-    const role = data.role === "1" ? "admin" : data.role === "2" ? "staff" : null;
-
+    const role = data.role === "1" ? "admin" : data.role === "2" ? "staff" : -1;
+    if(role === -1 )return -1;
     const addUserModel = await this.UserModel.create({
       name: data.name,
       username: data.username,
@@ -31,7 +31,7 @@ class AuthService{
       role: role
     })
     
-    return 1;
+    return addUserModel ? 1 : -1 ;
   }
 
   async login(data, rememberMe) {
