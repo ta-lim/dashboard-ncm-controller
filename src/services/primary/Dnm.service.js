@@ -1,6 +1,6 @@
 import DnmModel from "../../models/Dnm.model.js";
 import ExcelJS from "exceljs";
-import { Op, where } from "sequelize";
+import { Op } from "sequelize";
 import FileSystemHelper from "../../helpers/FileSystem.helper.js";
 
 class DnmService {
@@ -49,6 +49,7 @@ class DnmService {
 
   async getDetail(id) {
     const getDetailDnm = await this.DnmModel.findOne({
+      attributes: {exclude: ["createdAt", "updatedAt"]},
       where: {
         id,
       },
@@ -161,19 +162,77 @@ class DnmService {
       done: done.length > 0 ? done[0].count : 0,
       total: getAnalyze.reduce((total, item) => total + item.count, 0),
     };
+    const onProgressRank = calculateRankSum(
+      getRank.filter((item) =>
+        ["1", "2", "3", "4", "5", "9"].includes(item.status)
+      )
+    );
+    const pendingRank = calculateRankSum(
+      getRank.filter((item) => ["7", "8"].includes(item.status))
+    );
+    const doneRank = calculateRankSum(
+      getRank.filter((item) => ["6", "10"].includes(item.status))
+    );
+    function transformData(onProgressRank, pendingRank, doneRank) {
+      // Helper function to add counts to the aggregation object
+      function addCounts(rank, counts) {
+        rank.forEach(({ name, count }) => {
+          counts[name] = (counts[name] || 0) + count;
+        });
+      }
+      // Aggregate the counts for each name
+      const totalCounts = {};
+      addCounts(onProgressRank, totalCounts);
+      addCounts(pendingRank, totalCounts);
+      addCounts(doneRank, totalCounts);
+
+      // Sort names by their total count
+      const sortedNames = Object.keys(totalCounts).sort(
+        (a, b) => totalCounts[b] - totalCounts[a]
+      );
+
+      // Initialize statusData with empty arrays
+      const statusData = {
+        "On Progress": new Array(sortedNames.length).fill(0),
+        Pending: new Array(sortedNames.length).fill(0),
+        Done: new Array(sortedNames.length).fill(0),
+      };
+
+      // Helper function to populate statusData based on sorted names
+      function populateStatusData(rank, status) {
+        rank.forEach(({ name, count }) => {
+          const index = sortedNames.indexOf(name);
+          statusData[status][index] = count;
+        });
+      }
+
+      // Populate statusData with counts from each rank
+      populateStatusData(onProgressRank, "On Progress");
+      populateStatusData(pendingRank, "Pending");
+      populateStatusData(doneRank, "Done");
+
+      // Transform statusData into the desired format
+      const transformedData = Object.entries(statusData).map(
+        ([name, data]) => ({
+          name,
+          data,
+        })
+      );
+
+      return { transformedData, sortedNames };
+    }
+
+    const transformedData = transformData(
+      onProgressRank,
+      pendingRank,
+      doneRank
+    );
+    
     const summaryRank = {
-      onProgress: calculateRankSum(
-        getRank.filter((item) =>
-          ["1", "2", "3", "4", "5", "9"].includes(item.status)
-        )
-      ),
-      pending: calculateRankSum(
-        getRank.filter((item) => ["7", "8"].includes(item.status))
-      ),
-      done: calculateRankSum(
-        getRank.filter((item) => ["6", "10"].includes(item.status))
-      ),
-      total: calculateRankSum(getRank),
+      onProgress: onProgressRank,
+      pending: pendingRank,
+      done: doneRank,
+      total: transformedData,
     };
     return { summary, summaryRank };
   }
@@ -181,7 +240,6 @@ class DnmService {
   async search(title, category, subCategory) {
     if (category === "undefined") return -1;
     const whereCondition = { category };
-    // console.log(subCategory)
     // Check if subCategory is provided
     if (subCategory !== "-1") {
       whereCondition.subCategory = subCategory;
@@ -201,7 +259,6 @@ class DnmService {
 
   async masterDataFilter(category, subCategory) {
     const whereCondition = { category };
-    console.log(subCategory);
     // Check if subCategory is provided
     if (subCategory !== undefined) {
       whereCondition.subCategory = subCategory;
@@ -321,7 +378,7 @@ class DnmService {
       ]);
     });
 
-    workBook.xlsx.writeFile(`./server_data/data.xlsx`);
+    await workBook.xlsx.writeFile(`./server_data/data.xlsx`);
     return {
       title: "data",
       ...(await this.FileSystemHelper.readFile("/server_data/data.xlsx")),

@@ -1,5 +1,8 @@
+import { where } from "sequelize";
 import JwtHelper from "../../helpers/JWT.helper.js";
 import UserModel from "../../models/User.model.js";
+
+import md5 from 'md5';
 
 
 class AuthService{
@@ -18,25 +21,59 @@ class AuthService{
     });
 
     if(userModeData !== null) return -1;
+    const password = md5(data.password + ' - ' + this.server.env.HASH_SALT)
+    const role = data.role === "1" ? "admin" : data.role === "2" ? "staff" : null;
 
     const addUserModel = await this.UserModel.create({
       name: data.name,
       username: data.username,
-      password: data.password,
-      role: data.role
+      password: password,
+      role: role
     })
     
     return 1;
   }
 
   async login(data, rememberMe) {
-    const getDataUserModel = await this.UserModel.findOne({ where: {username: data.username} });
+    const getDataUserModel = await this.UserModel.findOne({ 
+      where: {
+        username: data.username,
+        password: md5(data.password + ' - ' + this.server.env.HASH_SALT)
+      } 
+    });
 
     if(getDataUserModel === null) return -1;
 
     if(rememberMe === "true") return this.JwtHelper.generateWithRefreshToken({ role: getDataUserModel.dataValues.role, username: getDataUserModel.dataValues.username })
 
     return this.JwtHelper.generateToken({ role: getDataUserModel.dataValues.role, username: getDataUserModel.dataValues.username});
+  }
+
+  async changePassword(username, newPassword) {
+    const checkSamePassword = await this.UserModel.findAll({
+      where: {
+        username: username,
+        password: md5(newPassword + ' - ' + this.server.env.HASH_SALT)
+      }
+    })
+
+    // const checkIsuername
+    // console.log(username, newPassword)
+    // console.log(checkSamePassword)
+    if(checkSamePassword.length !== 0) return -1
+
+    const changePasswordModel = await this.UserModel.update(
+      {
+        password: md5(newPassword + ' - ' + this.server.env.HASH_SALT)
+      },{
+        where: {
+          username: username
+        }
+      }
+    )
+
+    console.log(changePasswordModel)
+    return 1;
   }
 
   async refreshToken(tokenData, refreshToken){
@@ -53,9 +90,21 @@ class AuthService{
     if(getDataUserModel === null) return -1;
 
     return{
-      username: getDataUserModel.dataValues.username,
+      name: getDataUserModel.dataValues.name,
       role: getDataUserModel.dataValues.role
     }
+  }
+
+  async getListUsers(){
+    const getListUsersModel = await this.UserModel.findAll({
+      attributes:[
+        "username",
+        "name",
+        "role"
+      ]
+    })
+
+    return getListUsersModel;
   }
 } 
 

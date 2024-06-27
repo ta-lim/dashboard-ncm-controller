@@ -30,16 +30,15 @@ class AuthController {
 
     if(createAccountSrv === -1) return res.status(403).json(this.ResponsePreset.resErr(
       403,
-      'Forbidden, Email Already Registered',
+      'Forbidden, Username Already Registered',
       'service',
       { code: -1 }
     ));
-
-    return res.status(200).json(this.ResponsePreset.resOK('OK', null))
+    if( createAccountSrv === 1 ) return res.status(200).json(this.ResponsePreset.resOK('OK', null))
   }
 
   async login(req, res){
-    const schemeValidate = this.Ajv.compile(this.AuthValidator.login);
+    const schemeValidate = this.Ajv.compile(this.AuthValidator.loginScheme);
 
     if(!schemeValidate(req.body)) return res.status(400).json(this.ResponsePreset.resErr(
       400,
@@ -59,6 +58,61 @@ class AuthController {
       { code: -1 }
     ))
     return res.status(200).json(this.ResponsePreset.resOK('OK', loginSrv))
+  }
+
+  async changePassword(req, res) {
+    const schemeValidateChagePassword = this.Ajv.compile(this.AuthValidator.changePasswordScheme);
+    const { username, newPassword } = req.body
+    const isUsername = req.middlewares.authorization.data.username;
+
+    if(username !== isUsername) return res.status(401).json(this.ResponsePreset.resErr(
+      401,
+      'Request Unauthorized',
+      'token',
+      { code: -1 }
+    ));
+
+
+    if(!schemeValidateChagePassword(req.body)) return res.status(400).json(this.ResponsePreset.resErr(
+      400,
+      schemeValidateChagePassword.errors[0].message,
+      'validator',
+      schemeValidateChagePassword.errors[0]
+    ));
+    // const role = req.middlewares.authorization.data.role;
+
+    // if(role !== "super admin") return res.status(401).json(this.ResponsePreset.resErr(
+    //   401,
+    //   'Request Unauthorized',
+    //   'token',
+    //   { code: -1 }
+    // ));
+
+    const changePasswordSrv = await this.AuthService.changePassword(username, newPassword);
+    if(changePasswordSrv === -1) return res.status(404).json(this.ResponsePreset.resErr(
+      404,
+      'Same password with before used',
+      'service',
+      { code: -1 }
+    ))
+
+    if(changePasswordSrv === 1) return res.status(200).json(this.ResponsePreset.resOK('Success update password'))
+  }
+
+  async getListUsers(req, res){
+    const role = req.middlewares.authorization.data.role;
+    // console.log(req.middlewares.authorization.data)
+
+    if(role !== "super admin") return res.status(401).json(this.ResponsePreset.resErr(
+      401,
+      'Request Unauthorized',
+      'token',
+      { code: -1 }
+    ));
+    const listUserSrv = await this.AuthService.getListUsers()
+
+    if(listUserSrv.length !== 0) return res.status(200).json(this.ResponsePreset.resOK("OK",listUserSrv))
+
   }
 
   async refreshToken(req, res){

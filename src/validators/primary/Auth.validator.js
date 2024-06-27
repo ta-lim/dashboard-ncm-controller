@@ -31,7 +31,7 @@ class AuthValidator {
     additionalProperties: false,
   }
 
-  login = {
+  loginScheme = {
     type: 'object',
     properties: {
       username: {
@@ -51,6 +51,27 @@ class AuthValidator {
     required: [
       'username', 'password'
     ],
+    additionalProperties: false
+  }
+
+  changePasswordScheme= {
+    type:"object",
+    properties: {
+      username: {
+        type: 'string',
+        minLength: 1,
+        maxLength: 25,
+        pattern: '^[a-zA-Z0-9]+$',
+        nullable: false,
+      },
+      newPassword: {
+        type: 'string',
+        minLength: 1,
+        maxLength: 16,
+        nullable: false,
+      }
+    },
+    required: ['username', 'newPassword'],
     additionalProperties: false
   }
 }

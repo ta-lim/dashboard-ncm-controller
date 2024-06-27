@@ -29,6 +29,10 @@ class DnmModel{
         type: DataTypes.TEXT,
         allowNull: false
       },
+      // notes: {
+      //   type: DataTypes.TEXT,
+      //   allowNull: true
+      // },
       crNumber: {
         type: DataTypes.STRING(45),
         allowNull: false
